@@ -1,0 +1,51 @@
+(include_subdirs unqualified)
+
+(ocamllex (modules lexer))
+
+(menhir (modules parser)
+ (flags ("--table"
+          "--unused-token" "CHANNEL"
+          "--unused-token" "CONST"
+          "--unused-token" "DEFER"
+          "--unused-token" "FALLTHROUGH"
+          "--unused-token" "GOSTMT"
+          "--unused-token" "GOTOSTMT"
+          "--unused-token" "IMPORT"
+          "--unused-token" "INTERFACE"
+          "--unused-token" "MAP"
+          "--unused-token" "RANGE"
+          "--unused-token" "SELECT"
+          "--unused-token" "VARIADIC"
+          "--unused-token" "CHANNELOP")))
+
+(rule
+ (targets error_messages.ml)
+ (deps error.messages parser.mly)
+ (action (with-stdout-to %{targets}
+          (run menhir
+               --unused-token CHANNEL
+               --unused-token CONST
+               --unused-token DEFER
+               --unused-token FALLTHROUGH
+               --unused-token GOSTMT
+               --unused-token GOTOSTMT
+               --unused-token IMPORT
+               --unused-token INTERFACE
+               --unused-token MAP
+               --unused-token RANGE
+               --unused-token SELECT
+               --unused-token VARIADIC
+               --unused-token CHANNELOP
+               --compile-errors %{deps}))))
+
+(library
+ (name golite)
+ (flags :standard -w -27 -w -33 -w -26 -w -9)
+ (modules (:standard \ main))
+ (libraries menhirLib core num llvm llvm.analysis))
+
+(executable
+ (name main)
+ (flags :standard -w -27 -w -33 -w -26 -w -9)
+ (modules main)
+ (libraries golite))
